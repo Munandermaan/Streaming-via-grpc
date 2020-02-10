@@ -1,5 +1,7 @@
 package com.knoldus.grpc.client;
 
+import com.proto.greet.FindMaximumRequest;
+import com.proto.greet.FindMaximumResponse;
 import com.proto.greet.GreetEveryoneRequest;
 import com.proto.greet.GreetEveryoneResponse;
 import com.proto.greet.GreetManyTimesRequest;
@@ -28,12 +30,12 @@ public class GreetingClient {
     public static void main(String[] args) throws SSLException {
         System.out.println("Hello I'm a gRPC client");
 
-        GreetingClient main = new GreetingClient();
+       final GreetingClient main = new GreetingClient();
         main.run();
     }
 
     private void run() throws SSLException {
-        ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 50051)
+       final ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 50051)
                 .usePlaintext()
                 .build();
 
@@ -48,6 +50,8 @@ public class GreetingClient {
 
         doUnaryCallWithDeadline(channel);
 
+           doFindLargest(channel);
+
         System.out.println("Shutting down channel");
         channel.shutdown();
 
@@ -55,33 +59,33 @@ public class GreetingClient {
 
     private void doUnaryCall(ManagedChannel channel) {
         // created a greet service client (blocking - synchronous)
-        GreetServiceGrpc.GreetServiceBlockingStub greetClient = GreetServiceGrpc.newBlockingStub(channel);
+       final GreetServiceGrpc.GreetServiceBlockingStub greetClient = GreetServiceGrpc.newBlockingStub(channel);
 
         // Unary
         // created a protocol buffer greeting message
-        Greeting greeting = Greeting.newBuilder()
+        final Greeting greeting = Greeting.newBuilder()
                 .setFirstName("Munander")
                 .setLastName("Maan")
                 .build();
 
         // do the same for a GreetRequest
-        GreetRequest greetRequest = GreetRequest.newBuilder()
+        final GreetRequest greetRequest = GreetRequest.newBuilder()
                 .setGreeting(greeting)
                 .build();
 
         // call the RPC and get back a GreetResponse (protocol buffers)
-        GreetResponse greetResponse = greetClient.greet(greetRequest);
+        final GreetResponse greetResponse = greetClient.greet(greetRequest);
 
         System.out.println(greetResponse.getResult());
 
     }
 
     private void doServerStreamingCall(ManagedChannel channel) {
-        GreetServiceGrpc.GreetServiceBlockingStub greetClient = GreetServiceGrpc.newBlockingStub(channel);
+        final GreetServiceGrpc.GreetServiceBlockingStub greetClient = GreetServiceGrpc.newBlockingStub(channel);
 
         // Server Streaming
         // we prepare the request
-        GreetManyTimesRequest greetManyTimesRequest =
+        final GreetManyTimesRequest greetManyTimesRequest =
                 GreetManyTimesRequest.newBuilder()
                         .setGreeting(Greeting.newBuilder().setFirstName("Munander"))
                         .build();
@@ -100,7 +104,7 @@ public class GreetingClient {
 
         CountDownLatch latch = new CountDownLatch(1);
 
-        StreamObserver<LongGreetRequest> requestObserver = asyncClient.longGreet(new StreamObserver<LongGreetResponse>() {
+      final StreamObserver<LongGreetRequest> requestObserver = asyncClient.longGreet(new StreamObserver<LongGreetResponse>() {
             @Override
             public void onNext(LongGreetResponse value) {
                 // we get a response from the server
@@ -162,7 +166,7 @@ public class GreetingClient {
 
         CountDownLatch latch = new CountDownLatch(1);
 
-        StreamObserver<GreetEveryoneRequest> requestObserver = asyncClient.greetEveryone(new StreamObserver<GreetEveryoneResponse>() {
+        final StreamObserver<GreetEveryoneRequest> requestObserver = asyncClient.greetEveryone(new StreamObserver<GreetEveryoneResponse>() {
             @Override
             public void onNext(GreetEveryoneResponse value) {
                 System.out.println("Response from server: " + value.getResult());
@@ -211,7 +215,7 @@ public class GreetingClient {
         // first call (3000 ms deadline)
         try {
             System.out.println("Sending a request with a deadline of 3000 ms");
-            GreetWithDeadlineResponse response = blockingStub.withDeadlineAfter(3000, TimeUnit.MILLISECONDS).greetWithDeadline(GreetWithDeadlineRequest.newBuilder().setGreeting(
+            final GreetWithDeadlineResponse response = blockingStub.withDeadlineAfter(3000, TimeUnit.MILLISECONDS).greetWithDeadline(GreetWithDeadlineRequest.newBuilder().setGreeting(
                     Greeting.newBuilder().setFirstName("Munander")
             ).build());
             System.out.println(response.getResult());
@@ -226,7 +230,7 @@ public class GreetingClient {
         // second call (100 ms deadline)
         try {
             System.out.println("Sending a request with a deadline of 100 ms");
-            GreetWithDeadlineResponse response = blockingStub.withDeadline(Deadline.after(100, TimeUnit.MILLISECONDS)).greetWithDeadline(GreetWithDeadlineRequest.newBuilder().setGreeting(
+            final GreetWithDeadlineResponse response = blockingStub.withDeadline(Deadline.after(100, TimeUnit.MILLISECONDS)).greetWithDeadline(GreetWithDeadlineRequest.newBuilder().setGreeting(
                     Greeting.newBuilder().setFirstName("Munander")
             ).build());
             System.out.println(response.getResult());
@@ -236,6 +240,50 @@ public class GreetingClient {
             } else {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void doFindLargest(ManagedChannel channel) {
+        GreetServiceGrpc.GreetServiceStub asyncClient = GreetServiceGrpc.newStub(channel);
+
+        CountDownLatch latch = new CountDownLatch(1);
+
+        StreamObserver<com.proto.greet.FindMaximumRequest> requestObserver = asyncClient.getLargest(new StreamObserver<FindMaximumResponse>() {
+
+            @Override
+            public void onNext(FindMaximumResponse findMaximumResponse) {
+                System.out.println("Get max from server" + findMaximumResponse.getNumber());
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+            latch.countDown();
+            }
+
+            @Override
+            public void onCompleted() {
+                System.out.println("Server is done Sending messages");
+            }
+        });
+
+        Arrays.asList(29,12,34,76,89).forEach(number -> {
+//            System.out.println("Sending number" + number);
+            requestObserver.onNext(FindMaximumRequest.newBuilder()
+                    .setNumber(number)
+                    .build());
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+
+        requestObserver.onCompleted();
+
+        try {
+            latch.await(3, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 }

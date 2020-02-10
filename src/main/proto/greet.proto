@@ -50,6 +50,14 @@ message GreetWithDeadlineResponse {
     string result = 1;
 }
 
+message FindMaximumRequest {
+    int32 number = 1;
+}
+
+message FindMaximumResponse {
+    int32 number = 1;
+}
+
 service GreetService {
     // Unary
     rpc Greet(GreetRequest) returns (GreetResponse) {};
@@ -66,4 +74,6 @@ service GreetService {
     // Rpc with Deadline
     // this Rpc will complete in no less than 300ms
     rpc GreetWithDeadline(GreetWithDeadlineRequest) returns (GreetWithDeadlineResponse) {};
+
+    rpc getLargest (stream FindMaximumRequest) returns (stream FindMaximumResponse) {};
 }

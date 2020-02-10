@@ -1,5 +1,7 @@
 package com.knoldus.grpc.server;
 
+import com.proto.greet.FindMaximumRequest;
+import com.proto.greet.FindMaximumResponse;
 import com.proto.greet.GreetEveryoneRequest;
 import com.proto.greet.GreetEveryoneResponse;
 import com.proto.greet.GreetManyTimesRequest;
@@ -20,11 +22,11 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
     @Override
     public void greet(GreetRequest request, StreamObserver<GreetResponse> responseObserver) {
         // extract the fields we need
-        Greeting greeting = request.getGreeting();
-        String firstName = greeting.getFirstName();
+       final Greeting greeting = request.getGreeting();
+        final String firstName = greeting.getFirstName();
 
         // create the response
-        String result = "Hello " + firstName;
+        final String result = "Hello " + firstName;
         GreetResponse response = GreetResponse.newBuilder()
                 .setResult(result)
                 .build();
@@ -38,7 +40,7 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
 
     @Override
     public void greetManyTimes(GreetManyTimesRequest request, StreamObserver<GreetManyTimesResponse> responseObserver) {
-        String firstName = request.getGreeting().getFirstName();
+        final String firstName = request.getGreeting().getFirstName();
 
         try {
             for (int i = 0; i < 10; i++) {
@@ -60,7 +62,7 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
     @Override
     public StreamObserver<LongGreetRequest> longGreet(StreamObserver<LongGreetResponse> responseObserver) {
         // we create the requestObserver that we'll return in this function
-        StreamObserver<LongGreetRequest> requestObserver = new StreamObserver<LongGreetRequest>() {
+        final StreamObserver<LongGreetRequest> requestObserver = new StreamObserver<LongGreetRequest>() {
 
             String result = "";
 
@@ -92,11 +94,11 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
 
     @Override
     public StreamObserver<GreetEveryoneRequest> greetEveryone(StreamObserver<GreetEveryoneResponse> responseObserver) {
-        StreamObserver<GreetEveryoneRequest> requestObserver = new StreamObserver<GreetEveryoneRequest>() {
+       final StreamObserver<GreetEveryoneRequest> requestObserver = new StreamObserver<GreetEveryoneRequest>() {
             @Override
             public void onNext(GreetEveryoneRequest value) {
                 String result = "Hello " + value.getGreeting().getFirstName();
-                GreetEveryoneResponse greetEveryoneResponse = GreetEveryoneResponse.newBuilder()
+               final GreetEveryoneResponse greetEveryoneResponse = GreetEveryoneResponse.newBuilder()
                         .setResult(result)
                         .build();
 
@@ -120,7 +122,7 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
     @Override
     public void greetWithDeadline(GreetWithDeadlineRequest request, StreamObserver<GreetWithDeadlineResponse> responseObserver) {
 
-        Context current = Context.current();
+        final Context current = Context.current();
 
         try {
 
@@ -146,4 +148,39 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
         }
 
     }
+
+    @Override
+    public StreamObserver<FindMaximumRequest> getLargest(StreamObserver<FindMaximumResponse> responseObserver) {
+
+        final StreamObserver<FindMaximumRequest> maximumRequest = new StreamObserver<FindMaximumRequest>() {
+            int currentMax = 0;
+            @Override
+            public void onNext(FindMaximumRequest findMaximumRequest) {
+
+                if (findMaximumRequest.getNumber() > currentMax) {
+                    currentMax = findMaximumRequest.getNumber();
+                    responseObserver.onNext(com.proto.greet.FindMaximumResponse.newBuilder()
+                            .setNumber(currentMax)
+                            .build());
+                }
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                responseObserver.onCompleted();
+
+            }
+
+            @Override
+            public void onCompleted() {
+            responseObserver.onNext(FindMaximumResponse.newBuilder()
+                    .setNumber(currentMax)
+                    .build());
+           responseObserver.onCompleted();
+            }
+
+        };
+        return maximumRequest;
+    }
+
 }
