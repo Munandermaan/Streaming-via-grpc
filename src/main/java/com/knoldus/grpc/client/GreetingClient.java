@@ -1,18 +1,18 @@
 package com.knoldus.grpc.client;
 
-import com.proto.greet.FindMaximumRequest;
-import com.proto.greet.FindMaximumResponse;
-import com.proto.greet.GreetEveryoneRequest;
-import com.proto.greet.GreetEveryoneResponse;
-import com.proto.greet.GreetManyTimesRequest;
-import com.proto.greet.GreetRequest;
-import com.proto.greet.GreetResponse;
-import com.proto.greet.GreetWithDeadlineRequest;
-import com.proto.greet.GreetWithDeadlineResponse;
-import com.proto.greet.Greeting;
-import com.proto.greet.LongGreetRequest;
-import com.proto.greet.LongGreetResponse;
-import com.proto.greet.GreetServiceGrpc;
+import com.knoldus.greet.FindMaximumRequest;
+import com.knoldus.greet.FindMaximumResponse;
+import com.knoldus.greet.GreetEveryoneRequest;
+import com.knoldus.greet.GreetEveryoneResponse;
+import com.knoldus.greet.GreetManyTimesRequest;
+import com.knoldus.greet.GreetRequest;
+import com.knoldus.greet.GreetResponse;
+import com.knoldus.greet.GreetServiceGrpc;
+import com.knoldus.greet.GreetWithDeadlineRequest;
+import com.knoldus.greet.GreetWithDeadlineResponse;
+import com.knoldus.greet.Greeting;
+import com.knoldus.greet.LongGreetRequest;
+import com.knoldus.greet.LongGreetResponse;
 import io.grpc.Deadline;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -20,37 +20,35 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 
-import javax.net.ssl.SSLException;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class GreetingClient {
 
-    public static void main(String[] args) throws SSLException {
+    public static void main(String[] args) {
         System.out.println("Hello I'm a gRPC client");
 
        final GreetingClient main = new GreetingClient();
         main.run();
     }
 
-    private void run() throws SSLException {
+    private void run() {
        final ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 50051)
                 .usePlaintext()
                 .build();
 
-
         doUnaryCall(channel);
-
-        doServerStreamingCall(channel);
-
-        doClientStreamingCall(channel);
-
-        doBiDiStreamingCall(channel);
-
-        doUnaryCallWithDeadline(channel);
-
-           doFindLargest(channel);
+//
+  //      doServerStreamingCall(channel);
+//
+  //    doClientStreamingCall(channel);
+//
+ //       doBiDiStreamingCall(channel);
+//
+//        doUnaryCallWithDeadline(channel);
+//
+        doFindLargest(channel);
 
         System.out.println("Shutting down channel");
         channel.shutdown();
@@ -200,12 +198,12 @@ public class GreetingClient {
         );
 
         requestObserver.onCompleted();
-
-        try {
-            latch.await(3, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//
+//        try {
+//            latch.await(3, TimeUnit.SECONDS);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
     }
 
@@ -215,7 +213,7 @@ public class GreetingClient {
         // first call (3000 ms deadline)
         try {
             System.out.println("Sending a request with a deadline of 3000 ms");
-            final GreetWithDeadlineResponse response = blockingStub.withDeadlineAfter(3000, TimeUnit.MILLISECONDS).greetWithDeadline(GreetWithDeadlineRequest.newBuilder().setGreeting(
+            final GreetWithDeadlineResponse response = blockingStub.withDeadline(Deadline.after(3000, TimeUnit.MILLISECONDS)).greetWithDeadline(GreetWithDeadlineRequest.newBuilder().setGreeting(
                     Greeting.newBuilder().setFirstName("Munander")
             ).build());
             System.out.println(response.getResult());
@@ -248,11 +246,11 @@ public class GreetingClient {
 
         CountDownLatch latch = new CountDownLatch(1);
 
-        StreamObserver<com.proto.greet.FindMaximumRequest> requestObserver = asyncClient.getLargest(new StreamObserver<FindMaximumResponse>() {
+        StreamObserver<com.knoldus.greet.FindMaximumRequest> requestObserver = asyncClient.getLargest(new StreamObserver<FindMaximumResponse>() {
 
             @Override
             public void onNext(FindMaximumResponse findMaximumResponse) {
-                System.out.println("Get max from server" + findMaximumResponse.getNumber());
+                System.out.println("Get max from server " + findMaximumResponse.getNumber());
             }
 
             @Override

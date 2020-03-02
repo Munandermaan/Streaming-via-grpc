@@ -1,19 +1,19 @@
 package com.knoldus.grpc.server;
 
-import com.proto.greet.FindMaximumRequest;
-import com.proto.greet.FindMaximumResponse;
-import com.proto.greet.GreetEveryoneRequest;
-import com.proto.greet.GreetEveryoneResponse;
-import com.proto.greet.GreetManyTimesRequest;
-import com.proto.greet.GreetManyTimesResponse;
-import com.proto.greet.GreetRequest;
-import com.proto.greet.GreetResponse;
-import com.proto.greet.GreetServiceGrpc;
-import com.proto.greet.GreetWithDeadlineRequest;
-import com.proto.greet.GreetWithDeadlineResponse;
-import com.proto.greet.Greeting;
-import com.proto.greet.LongGreetRequest;
-import com.proto.greet.LongGreetResponse;
+import com.knoldus.greet.FindMaximumRequest;
+import com.knoldus.greet.FindMaximumResponse;
+import com.knoldus.greet.GreetEveryoneRequest;
+import com.knoldus.greet.GreetEveryoneResponse;
+import com.knoldus.greet.GreetManyTimesRequest;
+import com.knoldus.greet.GreetManyTimesResponse;
+import com.knoldus.greet.GreetRequest;
+import com.knoldus.greet.GreetResponse;
+import com.knoldus.greet.GreetServiceGrpc;
+import com.knoldus.greet.GreetWithDeadlineRequest;
+import com.knoldus.greet.GreetWithDeadlineResponse;
+import com.knoldus.greet.Greeting;
+import com.knoldus.greet.LongGreetRequest;
+import com.knoldus.greet.LongGreetResponse;
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
 
@@ -159,7 +159,7 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
 
                 if (findMaximumRequest.getNumber() > currentMax) {
                     currentMax = findMaximumRequest.getNumber();
-                    responseObserver.onNext(com.proto.greet.FindMaximumResponse.newBuilder()
+                    responseObserver.onNext(FindMaximumResponse.newBuilder()
                             .setNumber(currentMax)
                             .build());
                 }
@@ -173,9 +173,6 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
 
             @Override
             public void onCompleted() {
-            responseObserver.onNext(FindMaximumResponse.newBuilder()
-                    .setNumber(currentMax)
-                    .build());
            responseObserver.onCompleted();
             }
 
